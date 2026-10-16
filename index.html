@@ -83,7 +83,10 @@ table.data td:first-child{text-align:left}
 .opt.wrong .l{background:var(--bad);color:var(--accent-ink)}
 .review .opt{cursor:default}
 .review .opt:hover{border-color:inherit}
-.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.qlist{display:grid;gap:18px}
+.qlist .qcard{scroll-margin-top:76px;transition:border-color .2s}
+.qlist .qcard.cur{border-color:var(--accent)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
 .flag{border:1px solid var(--border);background:transparent;padding:4px 10px;border-radius:999px;font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--muted)}
 .flag.on{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 
@@ -173,13 +176,7 @@ dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 
   <!-- EXAM -->
   <section id="exam" class="layout hidden">
-    <div>
-      <article class="card qcard" id="qcard"></article>
-      <div class="nav">
-        <button class="btn" id="prevBtn">← Anterior</button>
-        <button class="btn primary" id="nextBtn">Următor →</button>
-      </div>
-    </div>
+    <div class="qlist" id="qlist"></div>
     <aside class="card side">
       <h3>Itemi</h3>
       <div class="grid" id="grid"></div>
@@ -188,7 +185,7 @@ dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
       <div class="legend">
         <span>■ albastru = răspuns marcat</span>
         <span><span style="color:var(--warn)">●</span> = marcat pentru revizuire</span>
-        <span>Taste: A–D alege, ← → navighează</span>
+        <span>Taste: A–D alege la itemul curent, ← → navighează</span>
       </div>
     </aside>
   </section>
@@ -373,18 +370,48 @@ function body(q){
   return h;
 }
 
-function renderQ(){
-  const i = S.cur, q = Q[i], fl = S.flags[i];
-  $('#qcard').innerHTML =
-    `<div class="qnum"><span>Itemul ${i+1} din ${Q.length}</span><button class="flag ${fl?'on':''}" id="flagBtn">${fl?'● Marcat pentru revizuire':'○ Marchează pentru revizuire'}</button></div>`
+function cardHTML(i){
+  const q = Q[i], fl = S.flags[i], last = i===Q.length-1;
+  return `<div class="qnum"><span>Itemul ${i+1} din ${Q.length}</span><button class="flag ${fl?'on':''}" data-flag="${i}">${fl?'● Marcat pentru revizuire':'○ Marchează pentru revizuire'}</button></div>`
     + body(q)
-    + `<div class="opts">${q.o.map((o,k)=>`<button class="opt ${S.ans[i]===k?'sel':''}" data-k="${k}"><span class="l">${L[k]}</span><span>${o}</span></button>`).join('')}</div>`;
-  $('#qcard').querySelectorAll('.opt').forEach(b => b.onclick = () => choose(+b.dataset.k));
-  $('#flagBtn').onclick = () => { S.flags[i] = !S.flags[i]; store(); renderQ(); renderGrid(); };
-  $('#prevBtn').disabled = i===0;
-  $('#nextBtn').textContent = i===Q.length-1 ? 'Predă lucrarea' : 'Următor →';
+    + `<div class="opts">${q.o.map((o,k)=>`<button class="opt ${S.ans[i]===k?'sel':''}" data-q="${i}" data-k="${k}"><span class="l">${L[k]}</span><span>${o}</span></button>`).join('')}</div>`
+    + `<div class="nav"><button class="btn" data-go="${i-1}" ${i===0?'disabled':''}>← Anterior</button>`
+    + (last ? `<button class="btn primary" data-submit>Predă lucrarea</button>` : `<button class="btn primary" data-go="${i+1}">Următor →</button>`) + `</div>`;
+}
+
+function renderAll(){
+  $('#qlist').innerHTML = Q.map((_,i)=>`<article class="card qcard" id="q${i}">${cardHTML(i)}</article>`).join('');
+  setCur(S.cur);
+}
+
+function updateCard(i){ $('#q'+i).innerHTML = cardHTML(i); renderGrid(); }
+
+function setCur(i){
+  if(S.cur !== i){ S.cur = i; store(); }
+  document.querySelectorAll('#qlist .qcard').forEach((c,j)=>c.classList.toggle('cur', j===i));
   renderGrid();
 }
+
+// keep the "current" item in sync with what's on screen
+let scrollLock = 0;
+function trackScroll(){
+  if($('#exam').classList.contains('hidden') || Date.now() < scrollLock) return;
+  const cards = document.querySelectorAll('#qlist .qcard'), top = 90;
+  let best = 0;
+  cards.forEach((c,j)=>{ if(c.getBoundingClientRect().top <= top + 40) best = j; });
+  if(innerHeight + scrollY >= document.body.scrollHeight - 4) best = Q.length-1;
+  if(best !== S.cur) setCur(best);
+}
+let scrollPending = false;
+addEventListener('scroll', () => { if(scrollPending) return; scrollPending = true; requestAnimationFrame(()=>{ scrollPending = false; trackScroll(); }); }, {passive:true});
+
+$('#qlist').addEventListener('click', e => {
+  const opt = e.target.closest('[data-k]'), fl = e.target.closest('[data-flag]'), g = e.target.closest('[data-go]');
+  if(opt){ const i = +opt.dataset.q; setCur(i); choose(+opt.dataset.k); }
+  else if(fl){ const i = +fl.dataset.flag; S.flags[i] = !S.flags[i]; store(); updateCard(i); }
+  else if(g){ go(+g.dataset.go); }
+  else if(e.target.closest('[data-submit]')){ askSubmit(); }
+});
 
 function renderGrid(){
   $('#grid').innerHTML = Q.map((_,i)=>`<button class="cell ${S.ans[i]!=null?'ans':''} ${S.flags[i]?'flagged':''} ${i===S.cur?'cur':''}" data-i="${i}">${i+1}</button>`).join('');
@@ -393,8 +420,8 @@ function renderGrid(){
   $('#progress').innerHTML = `<b>${n}</b> / ${Q.length} itemi rezolvați`;
 }
 
-function choose(k){ S.ans[S.cur] = S.ans[S.cur]===k ? null : k; store(); renderQ(); }
-function go(i){ if(i<0||i>=Q.length) return; S.cur = i; store(); renderQ(); if(innerWidth<760) $('#qcard').scrollIntoView({block:'start'}); }
+function choose(k){ const i = S.cur; S.ans[i] = S.ans[i]===k ? null : k; store(); updateCard(i); }
+function go(i){ if(i<0||i>=Q.length) return; setCur(i); scrollLock = Date.now() + 900; $('#q'+i).scrollIntoView({behavior:'smooth', block:'start'}); }
 
 function fmt(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
@@ -412,7 +439,7 @@ function runTimer(){
 
 function begin(){
   S = { start: Date.now(), ans: Array(Q.length).fill(null), flags: Array(Q.length).fill(false), cur: 0, done: null };
-  store(); show('exam'); renderQ(); runTimer();
+  store(); show('exam'); renderAll(); runTimer();
 }
 
 function askSubmit(){
@@ -466,9 +493,7 @@ function renderReview(){
 
 // events
 $('#startBtn').onclick = () => { clear(); begin(); };
-$('#resumeBtn').onclick = () => { show('exam'); renderQ(); runTimer(); };
-$('#prevBtn').onclick = () => go(S.cur-1);
-$('#nextBtn').onclick = () => S.cur===Q.length-1 ? askSubmit() : go(S.cur+1);
+$('#resumeBtn').onclick = () => { show('exam'); renderAll(); runTimer(); if(S.cur) $('#q'+S.cur).scrollIntoView({block:'start'}); };
 $('#submitBtn').onclick = askSubmit;
 $('#cancelSubmit').onclick = () => $('#confirmDlg').close();
 $('#confirmSubmit').onclick = () => finish(false);
@@ -483,8 +508,8 @@ document.addEventListener('keydown', e => {
   if($('#exam').classList.contains('hidden') || document.querySelector('dialog[open]') || e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.toUpperCase();
   if(L.includes(k) && k.length===1) choose(L.indexOf(k));
-  else if(e.key==='ArrowRight') go(S.cur+1);
-  else if(e.key==='ArrowLeft') go(S.cur-1);
+  else if(e.key==='ArrowRight'){ e.preventDefault(); go(S.cur+1); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); go(S.cur-1); }
 });
 
 // theme
