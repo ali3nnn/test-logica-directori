@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test competențe directori</title>
+<meta name="description" content="Simulare interactivă a probei pentru evaluarea de competențe – concursul pentru directori, 13 octombrie 2026.">
+<style>
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#f0eee8; --text:#1d1d1b; --muted:#6b6a64;
+  --border:#dedbd2; --accent:#2f5d8a; --accent-ink:#ffffff; --accent-soft:#e3ecf5;
+  --ok:#2e7d4f; --ok-soft:#e1f2e7; --bad:#b3402f; --bad-soft:#f8e3df; --warn:#a86b00; --warn-soft:#fbefd6;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151614; --surface:#1e1f1d; --surface-2:#272825; --text:#ecebe6; --muted:#a09f98;
+    --border:#363733; --accent:#7fb0e0; --accent-ink:#0f1a26; --accent-soft:#1f2c3a;
+    --ok:#6cc58f; --ok-soft:#1b3125; --bad:#ec8a7a; --bad-soft:#3a201c; --warn:#e6b25a; --warn-soft:#3a2d15;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151614; --surface:#1e1f1d; --surface-2:#272825; --text:#ecebe6; --muted:#a09f98;
+  --border:#363733; --accent:#7fb0e0; --accent-ink:#0f1a26; --accent-soft:#1f2c3a;
+  --ok:#6cc58f; --ok-soft:#1b3125; --bad:#ec8a7a; --bad-soft:#3a201c; --warn:#e6b25a; --warn-soft:#3a2d15;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+header.bar .wrap{display:flex;align-items:center;gap:12px;height:60px}
+.brand{font-weight:650;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:20px;padding:4px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border)}
+.timer.low{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.timer.crit{color:var(--bad);background:var(--bad-soft);border-color:transparent;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.btn{border:1px solid var(--border);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:550}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.icon-btn{border:1px solid var(--border);background:var(--surface);width:38px;height:38px;border-radius:8px;display:grid;place-items:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.hidden{display:none!important}
+
+/* intro */
+.intro{padding:40px 0 60px}
+.intro .card{padding:28px}
+.intro h1{font-size:26px;line-height:1.25;margin:0 0 6px}
+.intro .sub{color:var(--muted);margin:0 0 20px}
+.intro ul{padding-left:20px;margin:0 0 24px}
+.intro li{margin:6px 0}
+.intro .actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* exam */
+.layout{display:grid;grid-template-columns:1fr 220px;gap:20px;padding:24px 0 80px;align-items:start}
+.qcard{padding:24px}
+.qnum{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qtext{font-size:17px;margin:0 0 14px}
+.qtext b{font-weight:650}
+blockquote{margin:0 0 14px;padding:12px 16px;background:var(--surface-2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:15px}
+.premises{margin:0 0 14px;padding:12px 16px;background:var(--surface-2);border-radius:8px;font-size:15px}
+.premises p{margin:4px 0}
+.seq{font-size:20px;font-weight:650;letter-spacing:.05em;margin:0 0 14px;text-align:center}
+table.data{border-collapse:collapse;width:100%;margin:0 0 14px;font-size:14.5px;font-variant-numeric:tabular-nums}
+table.data th,table.data td{border:1px solid var(--border);padding:7px 10px;text-align:center}
+table.data th{background:var(--surface-2);font-weight:600}
+table.data td:first-child{text-align:left}
+.tablewrap{overflow-x:auto}
+.opts{display:grid;gap:10px;margin-top:6px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface)}
+.opt:hover{border-color:var(--accent)}
+.opt .l{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:var(--surface-2)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .l{background:var(--accent);color:var(--accent-ink)}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .l{background:var(--ok);color:var(--accent-ink)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .l{background:var(--bad);color:var(--accent-ink)}
+.review .opt{cursor:default}
+.review .opt:hover{border-color:inherit}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.flag{border:1px solid var(--border);background:transparent;padding:4px 10px;border-radius:999px;font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--muted)}
+.flag.on{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+
+.side{position:sticky;top:80px;padding:16px}
+.side h3{margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cell{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-weight:600;font-size:14px;position:relative;padding:0}
+.cell.ans{background:var(--accent-soft);border-color:var(--accent)}
+.cell.cur{outline:2px solid var(--text);outline-offset:1px}
+.cell.flagged::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.cell.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.cell.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.cell.na{background:var(--surface-2);color:var(--muted)}
+.legend{font-size:12.5px;color:var(--muted);margin-top:12px;display:grid;gap:4px}
+.progress{font-size:14px;margin:14px 0 12px}
+.side .btn{width:100%}
+
+/* results */
+.results{padding:28px 0 80px}
+.score{padding:28px;display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.ring{--p:0;width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface-2) 0);display:grid;place-items:center;flex:none}
+.ring div{width:104px;height:104px;border-radius:50%;background:var(--surface);display:grid;place-items:center;text-align:center;line-height:1.1}
+.ring b{font-size:30px}
+.ring span{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,auto);gap:6px 28px}
+.stats div{font-size:13px;color:var(--muted)}
+.stats strong{display:block;font-size:22px;color:var(--text)}
+.score h2{margin:0 0 12px;font-size:22px}
+.filters{display:flex;gap:8px;margin:24px 0 12px;flex-wrap:wrap}
+.filters .btn.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.rlist{display:grid;gap:14px}
+.verdict{font-size:12.5px;font-weight:650;padding:3px 10px;border-radius:999px;text-transform:none;letter-spacing:0}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.ko{background:var(--bad-soft);color:var(--bad)}
+.verdict.na{background:var(--surface-2);color:var(--muted)}
+.sourcenote{font-size:13px;color:var(--muted);margin-top:24px}
+.sourcenote a{color:var(--accent)}
+
+dialog{border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);padding:24px;max-width:420px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 8px}
+dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+
+@media (max-width:760px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static;order:-1}
+  .grid{grid-template-columns:repeat(10,1fr)}
+  .qcard{padding:18px}
+  .brand{font-size:13px}
+}
+@media (max-width:420px){
+  .grid{grid-template-columns:repeat(5,1fr)}
+  .stats{grid-template-columns:repeat(3,1fr);gap:6px 14px}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">Proba de evaluare a competențelor · Directori 2026</div>
+    <div id="timer" class="timer hidden" aria-live="off">60:00</div>
+    <button class="icon-btn" id="themeBtn" title="Schimbă tema" aria-label="Schimbă tema">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- INTRO -->
+  <section id="intro" class="intro">
+    <div class="card">
+      <h1>Concursul pentru ocuparea funcțiilor de director și director adjunct</h1>
+      <p class="sub">Proba pentru evaluarea de competențe · 13 octombrie 2026</p>
+      <ul>
+        <li>Proba conține <b>20 de itemi</b> cu alegere multiplă. Fiecare item are patru variante, dintre care <b>una este corectă</b>.</li>
+        <li>Textele, datele și situațiile sunt fictive. Răspundeți exclusiv pe baza informațiilor din enunț.</li>
+        <li>Fiecare răspuns corect valorează <b>0,50 puncte</b> (maximum 10 puncte).</li>
+        <li>Timpul de lucru este de <b>60 de minute</b>. La expirare, testul se predă automat.</li>
+        <li>Puteți naviga liber între itemi, schimba răspunsurile și marca itemi pentru revizuire.</li>
+      </ul>
+      <div class="actions">
+        <button class="btn primary" id="startBtn">Începe testul</button>
+        <button class="btn hidden" id="resumeBtn">Continuă testul în curs</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="exam" class="layout hidden">
+    <div>
+      <article class="card qcard" id="qcard"></article>
+      <div class="nav">
+        <button class="btn" id="prevBtn">← Anterior</button>
+        <button class="btn primary" id="nextBtn">Următor →</button>
+      </div>
+    </div>
+    <aside class="card side">
+      <h3>Itemi</h3>
+      <div class="grid" id="grid"></div>
+      <div class="progress" id="progress"></div>
+      <button class="btn primary" id="submitBtn">Predă lucrarea</button>
+      <div class="legend">
+        <span>■ albastru = răspuns marcat</span>
+        <span><span style="color:var(--warn)">●</span> = marcat pentru revizuire</span>
+        <span>Taste: A–D alege, ← → navighează</span>
+      </div>
+    </aside>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="results hidden">
+    <div class="card score">
+      <div class="ring" id="ring"><div><b id="pts">0</b><span>din 10 puncte</span></div></div>
+      <div>
+        <h2 id="verdictTitle"></h2>
+        <div class="stats">
+          <div><strong id="sOk">0</strong>corecte</div>
+          <div><strong id="sKo">0</strong>greșite</div>
+          <div><strong id="sNa">0</strong>fără răspuns</div>
+        </div>
+        <p class="sub" id="timeUsed" style="margin:14px 0 0;color:var(--muted)"></p>
+      </div>
+    </div>
+    <div class="filters" id="filters">
+      <button class="btn on" data-f="all">Toate</button>
+      <button class="btn" data-f="ko">Greșite</button>
+      <button class="btn" data-f="na">Fără răspuns</button>
+      <button class="btn" data-f="ok">Corecte</button>
+      <span style="flex:1"></span>
+      <button class="btn primary" id="restartBtn">Reia testul</button>
+    </div>
+    <div class="rlist" id="rlist"></div>
+    <p class="sourcenote">Sursa: subiectul și baremul publicate de Centrul Național pentru Curriculum și Evaluare, prin
+      <a href="https://cdn.edupedu.ro/wp-content/uploads/2026/10/Concurs_directori_PROBA_a_subiect.pdf" target="_blank" rel="noopener">edupedu.ro (subiect)</a> și
+      <a href="https://cdn.edupedu.ro/wp-content/uploads/2026/10/Concurs_directori_PROBA_a_barem.pdf" target="_blank" rel="noopener">edupedu.ro (barem)</a>.</p>
+  </section>
+</main>
+
+<dialog id="confirmDlg">
+  <h3>Predați lucrarea?</h3>
+  <p id="confirmText"></p>
+  <div class="actions">
+    <button class="btn" id="cancelSubmit">Înapoi la test</button>
+    <button class="btn primary" id="confirmSubmit">Predă</button>
+  </div>
+</dialog>
+<dialog id="timeDlg">
+  <h3>Timpul a expirat</h3>
+  <p>Cele 60 de minute s-au încheiat. Lucrarea a fost predată automat.</p>
+  <div class="actions"><button class="btn primary" id="timeOk">Vezi rezultatele</button></div>
+</dialog>
+
+<script>
+const Q = [
+{t:`În care dintre enunțurile următoare <b>NU</b> există o exprimare redundantă (pleonasm)?`,
+ o:[`Cei doi profesori au colaborat împreună la proiectul de lectură.`,
+    `Comisia a anticipat dinainte scăderea numărului de elevi înscriși.`,
+    `Proiectul a avansat înainte conform calendarului stabilit.`,
+    `Rezultatele evaluării au fost comunicate părinților chiar în ziua probei.`], a:3},
+{t:`Fragment din regulamentul intern al unei școli:`,
+ q:`„Sala de sport poate fi închiriată persoanelor sau organizațiilor din afara școlii numai pe baza unei cereri depuse cu cel puțin zece zile lucrătoare înainte de prima utilizare. În zilele de curs, sala poate fi închiriată numai după ora 16:00. În perioada vacanțelor școlare, ea poate fi închiriată și în intervalul 8:00 – 14:00, dar numai cu acordul scris al directorului. Cererile depuse de asociațiile sportive afiliate unei federații au prioritate față de celelalte cereri, indiferent de data depunerii. Tariful se achită integral înainte de prima utilizare; neachitarea tarifului atrage anularea programării, fără notificare prealabilă.”`,
+ t2:`Potrivit fragmentului, care dintre afirmațiile următoare este adevărată?`,
+ o:[`O asociație sportivă afiliată unei federații are prioritate chiar dacă a depus cererea mai târziu.`,
+    `În vacanțele școlare, sala poate fi închiriată în intervalul 8:00 – 14:00 fără alte formalități.`,
+    `Programarea pentru care tariful nu a fost achitat se anulează după notificarea solicitantului.`,
+    `Cererea de închiriere se depune cu cel puțin zece zile calendaristice înainte de prima utilizare.`], a:0},
+{t:`În care dintre enunțurile următoare cuvântul scris cu litere cursive este folosit corect?`,
+ o:[`Elevul provine dintr-un mediu <i>familiar</i> dificil, ceea ce explică absențele.`,
+    `Pericolul unei inundații în subsolul școlii era <i>eminent</i> după ploile din martie.`,
+    `Raportul oferă o perspectivă <i>complimentară</i> celei prezentate în anul anterior.`,
+    `Analiza datelor a <i>relevat</i> o scădere a frecvenței la clasele a IX-a.`], a:3},
+{t:`Fragment dintr-o procedură internă a unei școli:`,
+ q:`„Absența unui cadru didactic se anunță secretariatului până la ora 7:30 a zilei respective. Suplinirea orelor se asigură, în ordine, de: (1) un cadru didactic de aceeași specialitate care nu are ore în intervalul respectiv; (2) un cadru didactic de altă specialitate, din aceeași arie curriculară, care nu are ore în intervalul respectiv; (3) profesorul diriginte al clasei. Dacă nicio variantă nu este disponibilă, clasa este preluată de profesorul de serviciu, care supraveghează elevii, fără să predea. Orele suplinite conform punctelor (1) și (2) se consemnează ca ore efectuate; cele de la punctul (3) se consemnează doar dacă dirigintele predă efectiv disciplina sa.”`,
+ t2:`Profesorul de fizică al unei clase lipsește. În intervalul orei sale sunt liberi un profesor de chimie (din aceeași arie curriculară cu fizica) și dirigintele clasei, profesor de istorie. Niciun alt profesor de fizică nu este liber. Ce se întâmplă, potrivit procedurii?`,
+ o:[`Suplinește dirigintele, iar ora se consemnează ca efectuată dacă el predă istorie.`,
+    `Suplinește profesorul de chimie, iar ora se consemnează ca oră efectuată.`,
+    `Suplinește profesorul de chimie, dar ora nu se consemnează, deoarece el nu predă fizică.`,
+    `Clasa este preluată de profesorul de serviciu, deoarece niciun profesor de fizică nu este liber.`], a:1},
+{t:`Redacția revistei unei școli a stabilit următoarele reguli interne:`,
+ p:[`– Un articol poate fi publicat numai dacă a fost citit de cel puțin doi membri ai redacției.`,
+    `– Orice articol mai lung de două pagini trebuie aprobat de către profesorul coordonator.`,
+    `Articolul referitor la proiectul de reciclare a fost publicat și nu a necesitat aprobarea profesorului coordonator.`],
+ t2:`Presupunând că regulile au fost respectate, ce se poate afirma cu certitudine despre articolul referitor la proiectul de reciclare?`,
+ o:[`A fost citit de cel puțin doi membri ai redacției, dar lungimea lui nu poate fi stabilită.`,
+    `A fost citit de exact doi membri ai redacției și are cel mult două pagini.`,
+    `A fost citit de cel puțin doi membri ai redacției și are cel mult două pagini.`,
+    `A fost citit de exact doi membri ai redacției, dar lungimea lui nu poate fi stabilită.`], a:2},
+{t:`Fragment din regulamentul unui program de burse finanțat de o fundație:`,
+ q:`„Pot beneficia de bursă numai elevii care au obținut media generală de cel puțin 9,00 în anul școlar anterior și care nu au nicio absență nemotivată. Prin excepție, elevii premiați la o competiție națională în ultimii doi ani pot beneficia de bursă și cu o medie generală de cel puțin 8,50, condiția privind absențele rămânând aplicabilă. Dacă numărul solicitanților eligibili depășește numărul burselor, departajarea se face după media generală, iar la medii egale are prioritate solicitantul cu venitul pe membru de familie mai mic. Bursa nu se cumulează cu alte burse acordate de aceeași fundație.”`,
+ t2:`Care dintre afirmațiile următoare rezultă în mod obligatoriu din fragment?`,
+ o:[`Un elev cu media generală 8,70, fără absențe nemotivate, premiat la o competiție națională anul trecut, primește bursa.`,
+    `Un elev fără premiu național, cu media generală 8,90 în anul școlar anterior, nu este eligibil, indiferent de absențe.`,
+    `Când solicitanții eligibili sunt mai mulți decât bursele, au prioritate cei cu venitul pe membru de familie mai mic.`,
+    `Un elev premiat la o competiție națională nu poate primi bursa dacă beneficiază deja de o altă bursă.`], a:1},
+{t:`Coordonatorul de proiecte educative a transmis următoarea informare:`,
+ q:`„Fiecare activitate din «Școala altfel» se desfășoară fie în școală, fie în parteneriat cu o instituție externă, dar nu în ambele moduri. Activitățile în parteneriat necesită un protocol semnat, cu excepția celor organizate cu instituții publice din localitate. Dintre activitățile desfășurate în școală, se consemnează în raportul către consiliul de administrație toate cele care îi implică și pe părinți, și numai acestea.”`,
+ t2:`Activitatea „Ziua meseriilor” nu necesită protocol semnat și nu se consemnează în raportul către consiliul de administrație.<br>Ce se poate afirma cu certitudine despre activitatea „Ziua meseriilor”?`,
+ o:[`Dacă se desfășoară în școală, nu îi implică pe părinți; altfel, partenerul este o instituție publică din localitate.`,
+    `Se desfășoară în școală și nu îi implică pe părinți; varianta parteneriatului este exclusă de lipsa protocolului.`,
+    `Se desfășoară în parteneriat cu o instituție publică din localitate; varianta școlii este exclusă de absența din raport.`,
+    `Dacă se desfășoară în școală, poate să îi implice pe părinți; altfel, partenerul este o instituție publică din localitate.`], a:0},
+{t:`Bugetul anual al unei școli pentru materiale didactice este de 12 000 de lei. 40% din buget se alocă laboratoarelor. Din suma rămasă, jumătate se alocă bibliotecii, iar restul se alocă celorlalte destinații.<br>Ce sumă se alocă celorlalte destinații?`,
+ o:[`2 400 de lei`,`3 600 de lei`,`6 000 de lei`,`7 200 de lei`], a:1},
+{t:`Numărul de participanți la un program de mentorat a evoluat, de la o ediție la alta, după o regulă constantă:`,
+ seq:`3, 5, 9, 17, 33, …`,
+ t2:`Câți participanți vor fi la ediția următoare, dacă regula se păstrează?`,
+ o:[`49`,`64`,`65`,`66`], a:2},
+{t:`La Evaluarea Națională, într-o școală, 180 din cei 240 de elevi au obținut cel puțin nota 5. În anul următor, 200 din cei 250 de elevi au obținut cel puțin nota 5.<br>Cu câte puncte procentuale a crescut ponderea elevilor care au obținut cel puțin nota 5?`,
+ o:[`5 puncte procentuale`,`6,7 puncte procentuale`,`11,1 puncte procentuale`,`20 de puncte procentuale`], a:0},
+{t:`Tabelul prezintă situația absențelor dintr-un an școlar la patru clase ale unei școli.`,
+ tbl:{h:[`Clasa`,`Număr de elevi`,`Absențe motivate`,`Absențe nemotivate`],
+      r:[[`a V-a A`,25,300,175],[`a V-a B`,26,160,208],[`a VI-a A`,24,408,144],[`a VI-a B`,28,252,210]]},
+ t2:`Care clasă are cea mai mare medie per elev a numărului de absențe nemotivate?`,
+ o:[`a V-a A`,`a V-a B`,`a VI-a A`,`a VI-a B`], a:1},
+{t:`Tabelul prezintă numărul de elevi cu media anuală sub 5 la fiecare dintre următoarele cinci discipline, în doi ani școlari consecutivi.`,
+ tbl:{h:[`Disciplina`,`2024-2025`,`2025-2026`],
+      r:[[`Matematică`,40,30],[`Fizică`,16,10],[`Chimie`,25,15],[`Limba și literatura română`,50,35],[`Biologie`,19,15]]},
+ t2:`Cu ce procent a scăzut, de la un an la altul, numărul total al situațiilor de medie sub 5 la cele cinci discipline?`,
+ o:[`30%`,`43%`,`45%`,`70%`], a:0},
+{t:`Doi profesori corectează împreună 162 de lucrări. Primul începe la ora 8:00 și corectează 12 lucrări pe oră. Al doilea începe la ora 9:00 și corectează 18 lucrări pe oră. Amândoi lucrează fără pauză, în ritm constant, până la terminarea tuturor lucrărilor, iar nicio lucrare nu este corectată de două ori.<br>La ce oră se termină corectarea tuturor lucrărilor?`,
+ o:[`13:00`,`13:24`,`14:00`,`14:24`], a:2},
+{t:`Într-un liceu, 60% dintre elevi sunt fete. Fac parte din clubul sportiv al liceului 10% dintre fete și 45% dintre băieți.<br>Ce procent dintre membrii clubului sportiv sunt fete?`,
+ o:[`6%`,`24%`,`25%`,`60%`], a:2},
+{t:`Într-o școală se aplică, fără excepție, următoarea regulă: „Dacă o clasă are 28 de elevi sau mai mulți, atunci la orele de laborator ea este împărțită în două grupe.”<br>La orele de laborator, clasa a X-a C nu este împărțită în două grupe.<br>Ce se poate concluziona cu certitudine?`,
+ o:[`Clasa a X-a C are exact 27 de elevi.`,
+    `Clasa a X-a C are 28 de elevi sau mai mulți, dar regula nu i se aplică.`,
+    `Despre numărul de elevi ai clasei a X-a C nu se poate stabili nimic.`,
+    `Clasa a X-a C are cel mult 27 de elevi.`], a:3},
+{t:`Într-o școală se aplică, fără excepție, două reguli:`,
+ p:[`(1) Dacă un proiect primește finanțare de la consiliul local, atunci are un coordonator desemnat de director.`,
+    `(2) Dacă un proiect are un coordonator desemnat de director, atunci raportul său final se prezintă în consiliul profesoral.`,
+    `Raportul final al proiectului „Grădina școlii” nu a fost prezentat în consiliul profesoral.`],
+ t2:`Ce se poate concluziona cu certitudine despre proiectul „Grădina școlii”?`,
+ o:[`A primit finanțare de la consiliul local, dar nu are un coordonator desemnat de director.`,
+    `Nu are un coordonator desemnat de director, dar poate să fi primit finanțare de la consiliul local.`,
+    `Nu are un coordonator desemnat de director; despre finanțare nu se poate stabili nimic.`,
+    `Nu a primit finanțare de la consiliul local.`], a:3},
+{t:`Despre profesorii unei școli se știe că:`,
+ p:[`– Toți membrii echipei de mentorat au gradul didactic I.`,
+    `– Niciun profesor nou-venit în școală nu are gradul didactic I.`,
+    `– Unii membri ai echipei de proiecte sunt profesori nou-veniți în școală.`],
+ t2:`Care dintre concluziile următoare decurge cu necesitate din aceste informații?`,
+ o:[`Niciun membru al echipei de proiecte nu face parte din echipa de mentorat.`,
+    `Unii membri ai echipei de mentorat nu fac parte din echipa de proiecte.`,
+    `Unii membri ai echipei de proiecte nu fac parte din echipa de mentorat.`,
+    `Unii profesori cu gradul didactic I fac parte din echipa de proiecte.`], a:2},
+{t:`Cinci profesori – de matematică, de limba și literatura română, de istorie, de fizică și de biologie – sunt de serviciu în școală de luni până vineri, câte unul pe zi, fiecare exact o zi. Se știe că:`,
+ p:[`– Profesorul de istorie este de serviciu în ziua imediat următoare celei în care este de serviciu profesorul de limba și literatura română.`,
+    `– Profesorul de matematică nu este de serviciu nici luni, nici vineri.`,
+    `– Profesorul de fizică este de serviciu într-o zi anterioară celei în care este de serviciu profesorul de matematică.`,
+    `– Profesorul de biologie și cel de matematică nu sunt de serviciu în zile consecutive.`,
+    `– Profesorul de biologie nu este de serviciu vineri.`],
+ t2:`Care profesor este de serviciu joi?`,
+ o:[`Profesorul de limba și literatura română`,`Profesorul de istorie`,`Profesorul de matematică`,`Profesorul de fizică`], a:0},
+{t:`Un raționament este <i>valid</i> dacă, presupunând că premisele sunt adevărate, concluzia rezultă cu necesitate din ele – chiar dacă premisele sau concluzia nu corespund realității.<br>Care dintre raționamentele următoare este valid?`,
+ o:[`Toți directorii de școală sunt cadre didactice. Unele cadre didactice sunt și diriginți. Deci unii directori de școală sunt diriginți.`,
+    `Toți diriginții sunt metodiști. Toți metodiștii fac parte din consiliul de administrație. Deci toți diriginții fac parte din consiliul de administrație.`,
+    `Toți profesorii buni își pregătesc lecțiile. Unii profesori din școală își pregătesc lecțiile. Deci unii profesori din școală sunt profesori buni.`,
+    `Niciun elev de gimnaziu nu susține bacalaureatul. Niciun elev de gimnaziu nu este student. Deci niciun student nu susține bacalaureatul.`], a:1},
+{t:`Directorul trebuie să formeze o comisie de exact trei membri, alegând dintre șase profesori: de matematică, de limba și literatura română, de engleză, de istorie, de fizică și de chimie. Comisia trebuie să respecte toate condițiile următoare:`,
+ p:[`− Dacă profesorul de fizică face parte din comisie, atunci face parte și profesorul de matematică.`,
+    `− Profesorii de limba și literatura română și de engleză nu pot face parte amândoi din comisie.`,
+    `− Cel puțin unul dintre profesorii de istorie și de chimie face parte din comisie.`,
+    `− Profesorii de matematică și de chimie nu pot face parte amândoi din comisie.`,
+    `− Dacă profesorii de engleză și de istorie fac amândoi parte din comisie, atunci face parte și profesorul de fizică.`],
+ t2:`Care profesor face parte din orice comisie care respectă toate condițiile?`,
+ o:[`Profesorul de matematică`,`Profesorul de limba și literatura română`,`Profesorul de engleză`,`Profesorul de istorie`], a:3},
+];
+
+const DURATION = 60*60*1000, KEY = 'testDirectori2026', L = 'ABCD';
+const $ = s => document.querySelector(s);
+let S = null, tick = null, filter = 'all';
+
+function store(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)); }catch(e){ return null; } }
+function clear(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+
+function show(id){ ['intro','exam','results'].forEach(x => $('#'+x).classList.toggle('hidden', x!==id)); window.scrollTo(0,0); }
+
+function body(q){
+  let h = `<p class="qtext">${q.t}</p>`;
+  if(q.q) h += `<blockquote>${q.q}</blockquote>`;
+  if(q.p) h += `<div class="premises">${q.p.map(x=>`<p>${x}</p>`).join('')}</div>`;
+  if(q.seq) h += `<p class="seq">${q.seq}</p>`;
+  if(q.tbl) h += `<div class="tablewrap"><table class="data"><thead><tr>${q.tbl.h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${q.tbl.r.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  if(q.t2) h += `<p class="qtext"><b>${q.t2}</b></p>`;
+  return h;
+}
+
+function renderQ(){
+  const i = S.cur, q = Q[i], fl = S.flags[i];
+  $('#qcard').innerHTML =
+    `<div class="qnum"><span>Itemul ${i+1} din ${Q.length}</span><button class="flag ${fl?'on':''}" id="flagBtn">${fl?'● Marcat pentru revizuire':'○ Marchează pentru revizuire'}</button></div>`
+    + body(q)
+    + `<div class="opts">${q.o.map((o,k)=>`<button class="opt ${S.ans[i]===k?'sel':''}" data-k="${k}"><span class="l">${L[k]}</span><span>${o}</span></button>`).join('')}</div>`;
+  $('#qcard').querySelectorAll('.opt').forEach(b => b.onclick = () => choose(+b.dataset.k));
+  $('#flagBtn').onclick = () => { S.flags[i] = !S.flags[i]; store(); renderQ(); renderGrid(); };
+  $('#prevBtn').disabled = i===0;
+  $('#nextBtn').textContent = i===Q.length-1 ? 'Predă lucrarea' : 'Următor →';
+  renderGrid();
+}
+
+function renderGrid(){
+  $('#grid').innerHTML = Q.map((_,i)=>`<button class="cell ${S.ans[i]!=null?'ans':''} ${S.flags[i]?'flagged':''} ${i===S.cur?'cur':''}" data-i="${i}">${i+1}</button>`).join('');
+  $('#grid').querySelectorAll('.cell').forEach(b => b.onclick = () => go(+b.dataset.i));
+  const n = S.ans.filter(x=>x!=null).length;
+  $('#progress').innerHTML = `<b>${n}</b> / ${Q.length} itemi rezolvați`;
+}
+
+function choose(k){ S.ans[S.cur] = S.ans[S.cur]===k ? null : k; store(); renderQ(); }
+function go(i){ if(i<0||i>=Q.length) return; S.cur = i; store(); renderQ(); if(innerWidth<760) $('#qcard').scrollIntoView({block:'start'}); }
+
+function fmt(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+function runTimer(){
+  const t = $('#timer'); t.classList.remove('hidden');
+  const upd = () => {
+    const left = S.start + DURATION - Date.now();
+    t.textContent = fmt(left);
+    t.classList.toggle('low', left <= 10*60*1000 && left > 60*1000);
+    t.classList.toggle('crit', left <= 60*1000);
+    if(left <= 0){ finish(true); }
+  };
+  clearInterval(tick); upd(); tick = setInterval(upd, 250);
+}
+
+function begin(){
+  S = { start: Date.now(), ans: Array(Q.length).fill(null), flags: Array(Q.length).fill(false), cur: 0, done: null };
+  store(); show('exam'); renderQ(); runTimer();
+}
+
+function askSubmit(){
+  const na = S.ans.filter(x=>x==null).length, fl = S.flags.filter(Boolean).length;
+  let msg = na ? `Aveți ${na} ${na===1?'item':'itemi'} fără răspuns.` : 'Ați răspuns la toți itemii.';
+  if(fl) msg += ` ${fl} ${fl===1?'item este marcat':'itemi sunt marcați'} pentru revizuire.`;
+  $('#confirmText').textContent = msg + ' După predare nu mai puteți modifica răspunsurile.';
+  $('#confirmDlg').showModal();
+}
+
+function finish(timeout){
+  clearInterval(tick);
+  S.done = Math.min(Date.now(), S.start + DURATION);
+  store();
+  $('#timer').classList.add('hidden');
+  if($('#confirmDlg').open) $('#confirmDlg').close();
+  renderResults();
+  if(timeout){ $('#timeDlg').showModal(); }
+  show('results');
+}
+
+function renderResults(){
+  let ok=0, ko=0, na=0;
+  Q.forEach((q,i)=>{ if(S.ans[i]==null) na++; else if(S.ans[i]===q.a) ok++; else ko++; });
+  const pts = ok*0.5;
+  $('#pts').textContent = pts.toLocaleString('ro-RO',{minimumFractionDigits: pts%1?2:0});
+  $('#ring').style.setProperty('--p', pts*10);
+  $('#sOk').textContent = ok; $('#sKo').textContent = ko; $('#sNa').textContent = na;
+  $('#verdictTitle').textContent = pts>=9 ? 'Excelent!' : pts>=7 ? 'Foarte bine!' : pts>=5 ? 'Rezultat satisfăcător' : 'Mai e de lucru';
+  const used = S.done - S.start, m = Math.floor(used/60000), s = Math.floor(used/1000)%60;
+  $('#timeUsed').textContent = `Timp folosit: ${m} min ${s} s din 60 min`;
+  renderReview();
+}
+
+function renderReview(){
+  $('#rlist').innerHTML = Q.map((q,i)=>{
+    const a = S.ans[i], st = a==null ? 'na' : a===q.a ? 'ok' : 'ko';
+    if(filter!=='all' && filter!==st) return '';
+    const label = st==='ok' ? '✓ Corect' : st==='ko' ? `✗ Greșit — corect: ${L[q.a]}` : `Fără răspuns — corect: ${L[q.a]}`;
+    return `<article class="card qcard review">
+      <div class="qnum"><span>Itemul ${i+1}</span><span class="verdict ${st}">${label}</span></div>
+      ${body(q)}
+      <div class="opts">${q.o.map((o,k)=>{
+        const c = k===q.a ? 'correct' : (k===a ? 'wrong' : '');
+        const tag = k===a ? ' <em style="color:var(--muted);font-size:13px">(răspunsul tău)</em>' : '';
+        return `<div class="opt ${c}"><span class="l">${L[k]}</span><span>${o}${tag}</span></div>`;
+      }).join('')}</div>
+    </article>`;
+  }).join('') || `<p style="color:var(--muted)">Niciun item în această categorie.</p>`;
+}
+
+// events
+$('#startBtn').onclick = () => { clear(); begin(); };
+$('#resumeBtn').onclick = () => { show('exam'); renderQ(); runTimer(); };
+$('#prevBtn').onclick = () => go(S.cur-1);
+$('#nextBtn').onclick = () => S.cur===Q.length-1 ? askSubmit() : go(S.cur+1);
+$('#submitBtn').onclick = askSubmit;
+$('#cancelSubmit').onclick = () => $('#confirmDlg').close();
+$('#confirmSubmit').onclick = () => finish(false);
+$('#timeOk').onclick = () => $('#timeDlg').close();
+$('#restartBtn').onclick = () => { clear(); S=null; filter='all'; document.querySelectorAll('#filters [data-f]').forEach(b=>b.classList.toggle('on', b.dataset.f==='all')); $('#resumeBtn').classList.add('hidden'); show('intro'); };
+document.querySelectorAll('#filters [data-f]').forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll('#filters [data-f]').forEach(x=>x.classList.toggle('on', x===b));
+  renderReview();
+});
+document.addEventListener('keydown', e => {
+  if($('#exam').classList.contains('hidden') || document.querySelector('dialog[open]') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if(L.includes(k) && k.length===1) choose(L.indexOf(k));
+  else if(e.key==='ArrowRight') go(S.cur+1);
+  else if(e.key==='ArrowLeft') go(S.cur-1);
+});
+
+// theme
+(function(){
+  let t = null; try{ t = localStorage.getItem(KEY+'-theme'); }catch(e){}
+  if(t) document.documentElement.dataset.theme = t;
+  $('#themeBtn').onclick = () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    const n = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = n;
+    try{ localStorage.setItem(KEY+'-theme', n); }catch(e){}
+  };
+})();
+
+// restore session
+(function(){
+  const saved = load();
+  if(!saved || !Array.isArray(saved.ans) || saved.ans.length!==Q.length) return;
+  S = saved;
+  if(S.done){ renderResults(); show('results'); }
+  else if(Date.now() >= S.start + DURATION){ finish(true); }
+  else { $('#resumeBtn').classList.remove('hidden'); }
+})();
+</script>
+</body>
+</html>
