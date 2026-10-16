@@ -142,6 +142,8 @@ dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
   .stats{grid-template-columns:repeat(3,1fr);gap:6px 14px}
 }
 </style>
+<script data-goatcounter="https://ali3nnn.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <header class="bar">
@@ -437,7 +439,15 @@ function runTimer(){
   clearInterval(tick); upd(); tick = setInterval(upd, 250);
 }
 
+// GoatCounter custom events (no-op if the script is blocked or not loaded yet)
+function track(path, title){
+  try{
+    if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({path, title: title || path, event: true});
+  }catch(e){}
+}
+
 function begin(){
+  track('test-start', 'Test început');
   S = { start: Date.now(), ans: Array(Q.length).fill(null), flags: Array(Q.length).fill(false), cur: 0, done: null };
   store(); show('exam'); renderAll(); runTimer();
 }
@@ -457,6 +467,10 @@ function finish(timeout){
   $('#timer').classList.add('hidden');
   if($('#confirmDlg').open) $('#confirmDlg').close();
   renderResults();
+  const ok = Q.filter((q,i)=>S.ans[i]===q.a).length, answered = S.ans.filter(x=>x!=null).length;
+  track(timeout ? 'test-timeout' : 'test-submit', timeout ? 'Test predat automat (timp expirat)' : 'Test predat');
+  track('score-' + (ok*0.5).toFixed(1), 'Punctaj ' + (ok*0.5).toFixed(1) + ' / 10');
+  track('answered-' + answered, answered + ' / 20 itemi rezolvați');
   if(timeout){ $('#timeDlg').showModal(); }
   show('results');
 }
