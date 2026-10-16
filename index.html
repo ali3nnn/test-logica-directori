@@ -143,7 +143,8 @@ dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 }
 </style>
 <script data-goatcounter="https://ali3nnn.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+        data-goatcounter-settings='{"no_onload": true}'
+        async src="//gc.zgo.at/count.js" onload="window.gcFlush && gcFlush()"></script>
 </head>
 <body>
 <header class="bar">
@@ -439,11 +440,36 @@ function runTimer(){
   clearInterval(tick); upd(); tick = setInterval(upd, 250);
 }
 
-// GoatCounter custom events (no-op if the script is blocked or not loaded yet)
-function track(path, title){
-  try{
-    if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({path, title: title || path, event: true});
-  }catch(e){}
+// GoatCounter: page views are counted manually (no_onload) so the results
+// screen can have its own URL; calls made before count.js loads are queued.
+const gcQueue = [];
+function gc(vars){
+  if(window.goatcounter && window.goatcounter.count){ try{ window.goatcounter.count(vars); }catch(e){} }
+  else gcQueue.push(vars);
+}
+function gcFlush(){ while(gcQueue.length) gc(gcQueue.shift()); }
+function track(path, title){ gc({path, title: title || path, event: true}); }
+function pageview(){ gc({path: location.pathname, title: document.title}); }
+
+// routes: BASE = start page / test, BASE + "rezultate/" = results
+const BASE = location.pathname.replace(/rezultate\/?(index\.html)?$/, '').replace(/index\.html$/, '');
+const RESULTS = BASE + 'rezultate/';
+function setRoute(path, push){
+  if(location.pathname === path) return;
+  try{ history[push ? 'pushState' : 'replaceState'](null, '', path); }catch(e){}
+}
+function openResults(push){
+  renderResults(); show('results');
+  document.title = 'Rezultate · Test competențe directori';
+  setRoute(RESULTS, push); pageview();
+}
+function openIntro(push){
+  document.title = 'Test competențe directori';
+  const done = S && S.done, inProgress = S && !S.done;
+  $('#resumeBtn').classList.toggle('hidden', !(done || inProgress));
+  $('#resumeBtn').textContent = done ? 'Vezi rezultatele' : 'Continuă testul în curs';
+  show('intro');
+  setRoute(BASE, push); pageview();
 }
 
 function begin(){
@@ -471,8 +497,8 @@ function finish(timeout){
   track(timeout ? 'test-timeout' : 'test-submit', timeout ? 'Test predat automat (timp expirat)' : 'Test predat');
   track('score-' + (ok*0.5).toFixed(1), 'Punctaj ' + (ok*0.5).toFixed(1) + ' / 10');
   track('answered-' + answered, answered + ' / 20 itemi rezolvați');
+  openResults(true);
   if(timeout){ $('#timeDlg').showModal(); }
-  show('results');
 }
 
 function renderResults(){
@@ -507,12 +533,17 @@ function renderReview(){
 
 // events
 $('#startBtn').onclick = () => { clear(); begin(); };
-$('#resumeBtn').onclick = () => { show('exam'); renderAll(); runTimer(); if(S.cur) $('#q'+S.cur).scrollIntoView({block:'start'}); };
+$('#resumeBtn').onclick = () => { if(S.done) return openResults(true); show('exam'); renderAll(); runTimer(); if(S.cur) $('#q'+S.cur).scrollIntoView({block:'start'}); };
 $('#submitBtn').onclick = askSubmit;
 $('#cancelSubmit').onclick = () => $('#confirmDlg').close();
 $('#confirmSubmit').onclick = () => finish(false);
 $('#timeOk').onclick = () => $('#timeDlg').close();
-$('#restartBtn').onclick = () => { clear(); S=null; filter='all'; document.querySelectorAll('#filters [data-f]').forEach(b=>b.classList.toggle('on', b.dataset.f==='all')); $('#resumeBtn').classList.add('hidden'); show('intro'); };
+$('#restartBtn').onclick = () => { clear(); S=null; filter='all'; document.querySelectorAll('#filters [data-f]').forEach(b=>b.classList.toggle('on', b.dataset.f==='all')); openIntro(true); };
+addEventListener('popstate', () => {
+  if(location.pathname === RESULTS && S && S.done){ openResults(false); }
+  else if(!$('#exam').classList.contains('hidden')){ setRoute(BASE, false); /* stay in the running test */ }
+  else { openIntro(false); }
+});
 document.querySelectorAll('#filters [data-f]').forEach(b => b.onclick = () => {
   filter = b.dataset.f;
   document.querySelectorAll('#filters [data-f]').forEach(x=>x.classList.toggle('on', x===b));
@@ -541,11 +572,10 @@ document.addEventListener('keydown', e => {
 // restore session
 (function(){
   const saved = load();
-  if(!saved || !Array.isArray(saved.ans) || saved.ans.length!==Q.length) return;
-  S = saved;
-  if(S.done){ renderResults(); show('results'); }
-  else if(Date.now() >= S.start + DURATION){ finish(true); }
-  else { $('#resumeBtn').classList.remove('hidden'); }
+  if(saved && Array.isArray(saved.ans) && saved.ans.length===Q.length) S = saved;
+  if(S && S.done) openResults(false);
+  else if(S && Date.now() >= S.start + DURATION) finish(true);
+  else openIntro(false);
 })();
 </script>
 </body>
